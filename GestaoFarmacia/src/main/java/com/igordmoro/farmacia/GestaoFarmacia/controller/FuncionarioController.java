@@ -43,6 +43,7 @@ public class FuncionarioController {
         }
     }
 
+
     @GetMapping
     public List<Funcionario> listarTodosFuncionarios() {
         return funcionarioService.listarTodosFuncionarios();

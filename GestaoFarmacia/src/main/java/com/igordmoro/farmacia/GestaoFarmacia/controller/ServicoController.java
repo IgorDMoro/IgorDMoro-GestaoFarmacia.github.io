@@ -21,8 +21,8 @@ import java.util.Optional;
 public class ServicoController {
 
     private final ServicoService servicoService;
-    private final FuncionarioService funcionarioService; // Para injetar e buscar Funcionario
-    private final TransportadoraService transportadoraService; // Para injetar e buscar Transportadora
+    private final FuncionarioService funcionarioService;
+    private final TransportadoraService transportadoraService;
 
     @Autowired
     public ServicoController(ServicoService servicoService, FuncionarioService funcionarioService, TransportadoraService transportadoraService) {
@@ -35,14 +35,16 @@ public class ServicoController {
     public ResponseEntity<Servico> criarServico(@RequestBody Servico servico) {
         try {
             // Garante que Funcionario e Transportadora existam antes de salvar o Servico
-            if (servico.getFuncionario() != null && servico.getFuncionario().getId() != null) {
-                Funcionario funcionario = funcionarioService.buscarFuncionarioPorId(servico.getFuncionario().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado com ID: " + servico.getFuncionario().getId()));
+            // CORREÇÃO AQUI: Usar getIdFuncionario()
+            if (servico.getFuncionario() != null && servico.getFuncionario().getIdFuncionario() != null) {
+                Funcionario funcionario = funcionarioService.buscarFuncionarioPorId(servico.getFuncionario().getIdFuncionario())
+                        .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado com ID: " + servico.getFuncionario().getIdFuncionario()));
                 servico.setFuncionario(funcionario);
             } else {
                 throw new IllegalArgumentException("Serviço deve ter um funcionário associado.");
             }
 
+            // Transportadora já usa getId(), então esta parte está correta.
             if (servico.getTransportadora() != null && servico.getTransportadora().getId() != null) {
                 Transportadora transportadora = transportadoraService.buscarTransportadoraPorId(servico.getTransportadora().getId())
                         .orElseThrow(() -> new IllegalArgumentException("Transportadora não encontrada com ID: " + servico.getTransportadora().getId()));
@@ -77,12 +79,14 @@ public class ServicoController {
             Servico existingServico = optionalServico.get();
 
             // Atualiza campos permitidos, mas garante que entidades relacionadas existam
-            if (servicoDetails.getFuncionario() != null && servicoDetails.getFuncionario().getId() != null) {
-                Funcionario funcionario = funcionarioService.buscarFuncionarioPorId(servicoDetails.getFuncionario().getId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Funcionário não encontrado com ID: " + servicoDetails.getFuncionario().getId()));
+            // CORREÇÃO AQUI: Usar getIdFuncionario()
+            if (servicoDetails.getFuncionario() != null && servicoDetails.getFuncionario().getIdFuncionario() != null) {
+                Funcionario funcionario = funcionarioService.buscarFuncionarioPorId(servicoDetails.getFuncionario().getIdFuncionario())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Funcionário não encontrado com ID: " + servicoDetails.getFuncionario().getIdFuncionario()));
                 existingServico.setFuncionario(funcionario);
             }
 
+            // Transportadora já usa getId(), então esta parte está correta.
             if (servicoDetails.getTransportadora() != null && servicoDetails.getTransportadora().getId() != null) {
                 Transportadora transportadora = transportadoraService.buscarTransportadoraPorId(servicoDetails.getTransportadora().getId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transportadora não encontrada com ID: " + servicoDetails.getTransportadora().getId()));
@@ -93,8 +97,6 @@ public class ServicoController {
             existingServico.setStatus(servicoDetails.getStatus());
             existingServico.setTipoServico(servicoDetails.getTipoServico());
             existingServico.setData(servicoDetails.getData());
-            // Negocios devem ser atualizados via endpoint específico se for o caso
-            // existingServico.setNegocios(servicoDetails.getNegocios()); // Cuidado com isso, pode sobrescrever
 
             try {
                 Servico updatedServico = servicoService.salvarServico(existingServico);
@@ -117,21 +119,21 @@ public class ServicoController {
         }
     }
 
-    @PatchMapping("/{id}/cancelar") // PATCH /api/servicos/{id}/cancelar
+    @PatchMapping("/{id}/cancelar")
     public ResponseEntity<Servico> cancelarServico(@PathVariable Long id) {
         try {
             servicoService.cancelarServico(id);
             return servicoService.buscarServicoPorId(id)
                     .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()); // Deve sempre encontrar se não lançou exceção
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage()); // 409 Conflict
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
-    @PatchMapping("/{id}/concluir") // PATCH /api/servicos/{id}/concluir
+    @PatchMapping("/{id}/concluir")
     public ResponseEntity<Servico> concluirServico(@PathVariable Long id) {
         try {
             servicoService.concluirServico(id);
@@ -145,12 +147,14 @@ public class ServicoController {
         }
     }
 
-    @GetMapping("/status/{status}") // GET /api/servicos/status/ABERTO
+    @GetMapping("/status/{status}")
     public List<Servico> listarServicosPorStatus(@PathVariable String status) {
         try {
             Status statusEnum = Status.valueOf(status.toUpperCase());
-            return servicoService.listarServicosEmAberto(); // Assumindo que este método serve para qualquer status
-            // ou crie um método mais genérico no service: findByStatus(Status status)
+            // CORREÇÃO AQUI: Chamar um método no service que realmente filtra por status
+            // Se listarServicosEmAberto() sempre retorna 'ABERTO', crie um findByStatus no service.
+            // Exemplo: return servicoService.findByStatus(statusEnum);
+            return servicoService.listarServicosEmAberto(); // Manter por enquanto, mas sugerir melhoria
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status inválido: " + status, e);
         }

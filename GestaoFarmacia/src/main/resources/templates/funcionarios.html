@@ -27,7 +27,7 @@
     </thead>
     <tbody>
     <tr th:each="funcionario : ${funcionarios}">
-        <td th:text="${funcionario.id}">1</td>
+        <td th:text="${funcionario.idFuncionario}">1</td>
         <td th:text="${funcionario.nome}">João Silva</td>
         <td th:text="${funcionario.salarioBruto}">3000.00</td>
         <td th:text="${funcionario.salarioLiquido}">2500.00</td>
@@ -39,6 +39,6 @@
 </table>
 
 <br/>
-<a href="/funcionarios/form">Adicionar Novo Funcionário</a>
+<a href="/funcionarios/novo">Adicionar Novo Funcionário</a>
 </body>
 </html>

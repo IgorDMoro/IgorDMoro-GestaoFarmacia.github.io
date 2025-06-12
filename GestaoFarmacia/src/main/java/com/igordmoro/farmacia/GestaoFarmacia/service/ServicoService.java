@@ -6,6 +6,7 @@ import com.igordmoro.farmacia.GestaoFarmacia.entity.TipoServico; // Importe Tipo
 import com.igordmoro.farmacia.GestaoFarmacia.repository.ServicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
 
 import java.time.LocalDate; // Importe LocalDate
 import java.util.List;
@@ -22,9 +23,10 @@ public class ServicoService {
         this.servicoRepository = servicoRepository;
     }
 
+    @Transactional
     public Servico salvarServico(Servico servico) {
         // Validações de negócio para Servico
-        if (servico.getFuncionario() == null || servico.getFuncionario().getId() == null) {
+        if (servico.getFuncionario() == null || servico.getFuncionario().getIdFuncionario() == null) {
             throw new IllegalArgumentException("Serviço deve ter um funcionário associado com um ID válido.");
         }
         if (servico.getTransportadora() == null || servico.getTransportadora().getId() == null) {
@@ -48,6 +50,7 @@ public class ServicoService {
         return servicoRepository.save(servico);
     }
 
+    @Transactional
     public List<Servico> listarTodosServicos() {
         // Para garantir que o valor total seja calculado ao listar
         List<Servico> servicos = servicoRepository.findAll();
@@ -55,6 +58,7 @@ public class ServicoService {
         return servicos;
     }
 
+    @Transactional
     public Optional<Servico> buscarServicoPorId(Long id) {
         Optional<Servico> servico = servicoRepository.findById(id);
         servico.ifPresent(s -> s.setValor(calcularValorTotalServico(s))); // Calcula o valor se o serviço for encontrado
@@ -62,6 +66,7 @@ public class ServicoService {
     }
 
     // --- NOVO MÉTODO: DELETAR SERVIÇO ---
+    @Transactional
     public void deletarServico(Long id) {
         if (!servicoRepository.existsById(id)) {
             throw new IllegalArgumentException("Serviço não encontrado com ID: " + id);
@@ -69,6 +74,7 @@ public class ServicoService {
         servicoRepository.deleteById(id);
     }
 
+    @Transactional
     public void cancelarServico(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado com ID: " + id));
@@ -80,6 +86,7 @@ public class ServicoService {
         servicoRepository.save(servico);
     }
 
+    @Transactional
     public void concluirServico(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado com ID: " + id));
@@ -91,6 +98,7 @@ public class ServicoService {
         servicoRepository.save(servico);
     }
 
+    @Transactional
     public List<Servico> listarServicosEmAberto() {
         List<Servico> servicos = servicoRepository.findByStatus(Status.ABERTO);
         servicos.forEach(s -> s.setValor(calcularValorTotalServico(s)));

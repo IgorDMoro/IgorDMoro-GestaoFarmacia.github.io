@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${funcionario.id == null ? 'Adicionar Novo Funcionário' : 'Editar Funcionário'}">Adicionar Novo Funcionário</title>
+    <title th:text="${funcionario.idFuncionario == null ? 'Adicionar Novo Funcionário' : 'Editar Funcionário'}">Adicionar Novo Funcionário</title>
 </head>
 <body>
-<h1 th:text="${funcionario.id == null ? 'Adicionar Novo Funcionário' : 'Editar Funcionário'}">Adicionar Novo Funcionário</h1>
+<h1 th:text="${funcionario.idFuncionario == null ? 'Adicionar Novo Funcionário' : 'Editar Funcionário'}">Adicionar Novo Funcionário</h1>
 
 <form th:action="@{/funcionarios}" th:object="${funcionario}" method="post">
-    <input type="hidden" th:field="*{id}" />
+    <input type="hidden" th:field="*{idFuncionario}" />
 
     <label for="nome">Nome:</label>
     <input type="text" id="nome" th:field="*{nome}" required/><br/><br/>
@@ -20,19 +20,17 @@
     <label for="idade">Idade:</label>
     <input type="number" id="idade" th:field="*{idade}" required/><br/><br/>
 
-    <label for="genero">Gênero:</label>
-    <select id="genero" th:field="*{genero}" required>
-        <option value="">Selecione o Gênero</option>
-        <option value="M">Masculino</option>
-        <option value="F">Feminino</option>
-        <option value="O">Outro</option>
-    </select><br/><br/>
+    <label>Gênero:</label><br/>
+    <input type="radio" id="generoM" th:field="*{genero}" th:value="'M'" required/>
+    <label for="generoM">Masculino</label><br/>
+    <input type="radio" id="generoF" th:field="*{genero}" th:value="'F'" required/>
+    <label for="generoF">Feminino</label><br/><br/>
 
     <label for="cargo">Cargo:</label>
-    <select id="cargo" th:field="*{cargo.id}" required>
-        <option value="">Selecione um Cargo</option>
-        <option th:each="cargo : ${cargos}" th:value="${cargo.id}" th:text="${cargo.setor}">Cargo</option>
-    </select><br/><br/>
+    <select id="cargo" th:field="*{cargo.id}" required> <option value="">Selecione um Cargo</option>
+        <option th:each="c : ${cargos}"
+                th:value="${c.id}"
+                th:text="${c.setor}">Nome do Cargo</option> </select><br/><br/>
 
     <button type="submit">Salvar Funcionário</button>
 </form>

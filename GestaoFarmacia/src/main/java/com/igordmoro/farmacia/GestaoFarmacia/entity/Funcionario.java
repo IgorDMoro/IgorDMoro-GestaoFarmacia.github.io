@@ -1,6 +1,6 @@
 package com.igordmoro.farmacia.GestaoFarmacia.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.*; // Importe tudo de JPA
 import java.io.Serializable;
 
 @Entity
@@ -9,10 +9,11 @@ public class Funcionario implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id; // ID agora é gerenciado pelo JPA e é Long
+	@Column(name = "id_funcionario") // Mapeia para a coluna 'id_funcionario' no DB
+	private Long idFuncionario; // O nome da propriedade deve ser 'idFuncionario'
 
-	@ManyToOne // Um funcionário tem um Cargo
-	@JoinColumn(name = "cargo_id", nullable = false) // Coluna de chave estrangeira
+	@ManyToOne
+	@JoinColumn(name = "cargo_id", nullable = false)
 	private Cargo cargo;
 
 	@Column(name = "nome", nullable = false)
@@ -21,41 +22,39 @@ public class Funcionario implements Serializable {
 	@Column(name = "salario_bruto", nullable = false)
 	private double salarioBruto;
 
-	@Column(name = "salario_liquido", nullable = false)
-	private double salarioLiquido; // Este campo deve ser calculado, não direto no form
+	@Column(name = "salario_liquido", nullable = false) // Garanta que este campo seja preenchido no service
+	private double salarioLiquido;
 
 	@Column(name = "idade", nullable = false)
 	private int idade;
 
 	@Column(name = "genero", nullable = false)
-	private char genero;
+	private Character genero; // <<<< ESSA É A MUDANÇA CRÍTICA: de 'char' para 'Character'
 
-	@Column(name = "imposto", nullable = false)
-	private double imposto; // Este campo deve ser calculado, não direto no form
+	@Column(name = "imposto", nullable = false) // Garanta que este campo seja preenchido no service
+	private double imposto;
 
 	// Construtor padrão exigido pelo JPA
 	public Funcionario() {
-		// Inicializações padrão ou deixadas para o JPA
 	}
 
-	// Seu construtor existente, se for usar (sem ID, pois é gerado automaticamente)
-	public Funcionario(Cargo cargo, String nome, double salarioBruto, int idade, char genero) {
+	// Construtor com argumentos para criação (sem ID)
+	public Funcionario(Cargo cargo, String nome, double salarioBruto, int idade, Character genero) {
 		this.cargo = cargo;
 		this.nome = nome;
 		this.salarioBruto = salarioBruto;
 		this.idade = idade;
 		this.genero = genero;
-		// As validações devem ser movidas para um service ou antes da chamada do construtor
-		// setSalarioLiquido(); // Chamar o cálculo aqui, talvez no setter de salarioBruto ou em um serviço
+		// Salário líquido e imposto devem ser calculados no service
 	}
 
-	// Getters e Setters (Certifique-se de que todos estão aqui)
-	public Long getId() {
-		return id;
+	// --- Getters e Setters (Mantenha todos estes, sem erros de digitação) ---
+	public Long getIdFuncionario() {
+		return idFuncionario;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdFuncionario(Long idFuncionario) {
+		this.idFuncionario = idFuncionario;
 	}
 
 	public Cargo getCargo() {
@@ -80,14 +79,15 @@ public class Funcionario implements Serializable {
 
 	public void setSalarioBruto(double salarioBruto) {
 		this.salarioBruto = salarioBruto;
-		// Lógica de cálculo de salarioLiquido e imposto aqui ou em um serviço
+		// O cálculo do salário líquido e imposto DEVE ser feito no serviço,
+		// pois aqui na entidade ele não terá acesso completo ao 'cargo' para os vales/planos
 	}
 
 	public double getSalarioLiquido() {
 		return salarioLiquido;
 	}
 
-	public void setSalarioLiquido(double salarioLiquido) { // Este setter pode ser privado se o cálculo for interno
+	public void setSalarioLiquido(double salarioLiquido) {
 		this.salarioLiquido = salarioLiquido;
 	}
 
@@ -99,11 +99,11 @@ public class Funcionario implements Serializable {
 		this.idade = idade;
 	}
 
-	public char getGenero() {
+	public Character getGenero() { // <<<< GETTER PARA CHARACTER
 		return genero;
 	}
 
-	public void setGenero(char genero) {
+	public void setGenero(Character genero) { // <<<< SETTER PARA CHARACTER
 		this.genero = genero;
 	}
 
@@ -111,7 +111,7 @@ public class Funcionario implements Serializable {
 		return imposto;
 	}
 
-	public void setImposto(double imposto) { // Este setter pode ser privado se o cálculo for interno
+	public void setImposto(double imposto) {
 		this.imposto = imposto;
 	}
 }
