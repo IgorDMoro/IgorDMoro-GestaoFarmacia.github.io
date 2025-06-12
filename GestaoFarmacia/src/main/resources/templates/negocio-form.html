@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${negocio.id == null ? 'Adicionar Novo Negócio' : 'Editar Negócio'}">Adicionar Novo Negócio</title>
+</head>
+<body>
+<h1 th:text="${negocio.id == null ? 'Adicionar Novo Negócio' : 'Editar Negócio'}">Adicionar Novo Negócio</h1>
+
+<form th:action="@{/negocios}" th:object="${negocio}" method="post">
+    <input type="hidden" th:field="*{id}" />
+
+    <label for="quantidade">Quantidade:</label>
+    <input type="number" id="quantidade" th:field="*{quantidade}" required/><br/><br/>
+
+    <label for="produto">Produto:</label>
+    <select id="produto" th:field="*{produto.id}" required>
+        <option value="">Selecione um Produto</option>
+        <option th:each="produto : ${produtos}" th:value="${produto.id}" th:text="${produto.nome}">Produto</option>
+    </select><br/><br/>
+
+    <label for="servico">Serviço:</label>
+    <select id="servico" th:field="*{servico.id}" required>
+        <option value="">Selecione um Serviço</option>
+        <option th:each="servico : ${servicos}" th:value="${servico.id}" th:text="'Serviço ID: ' + ${servico.id}">Serviço</option>
+    </select><br/><br/>
+
+    <button type="submit">Salvar Negócio</button>
+</form>
+
+<br/>
+<a href="/negocios">Voltar para a Lista de Negócios</a>
+</body>
+</html>

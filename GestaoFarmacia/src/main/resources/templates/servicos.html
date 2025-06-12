@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Serviços</title>
+</head>
+<body>
+<h1>Serviços Registrados</h1>
+
+<div th:if="${servicos.isEmpty()}">
+    <p>Nenhum serviço registrado ainda.</p>
+</div>
+
+<table border="1" th:unless="${servicos.isEmpty()}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Data</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Funcionário (ID)</th>
+        <th>Transportadora (ID)</th>
+        <th>Valor Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="servico : ${servicos}">
+        <td th:text="${servico.idServico}">1</td> <td th:text="${#temporals.format(servico.data, 'dd/MM/yyyy')}">12/06/2025</td>
+        <td th:text="${servico.status}">ABERTO</td>
+        <td th:text="${servico.tipoServico}">VENDA</td>
+        <td th:text="${servico.funcionario != null ? servico.funcionario.id : 'N/A'}">1</td>
+        <td th:text="${servico.transportadora != null ? servico.transportadora.id : 'N/A'}">1</td>
+        <td th:text="${servico.valor}">150.00</td>
+    </tr>
+    </tbody>
+</table>
+
+<br/>
+<a href="/servicos/form">Adicionar Novo Serviço</a>
+</body>
+</html>
