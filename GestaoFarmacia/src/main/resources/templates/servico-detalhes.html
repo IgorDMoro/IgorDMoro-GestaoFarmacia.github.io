@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhes do Serviço</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 6px;
+        }
+    </style>
+</head>
+<body>
+<h1>Detalhes do Serviço</h1>
+
+<p><strong>ID:</strong> <span th:text="${servico.idServico}">1</span></p>
+<p><strong>Data:</strong> <span th:text="${#temporals.format(servico.data, 'dd/MM/yyyy')}">13/06/2025</span></p>
+<p><strong>Status:</strong> <span th:text="${servico.status}">ABERTO</span></p>
+<p><strong>Tipo:</strong> <span th:text="${servico.tipoServico}">VENDA</span></p>
+<p><strong>Funcionário:</strong> <span th:text="${servico.funcionario.nome}">Funcionário</span></p>
+<p><strong>Transportadora:</strong> <span th:text="${servico.transportadora.nome}">Transportadora</span></p>
+<p><strong>Valor Total:</strong> R$ <span th:text="${#numbers.formatDecimal(servico.valor, 1, 'POINT', 2, 'COMMA')}">0.00</span></p>
+
+<h2>Produtos deste Serviço</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Preço Unitário</th>
+        <th>Subtotal</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="negocio : ${servico.negocios}">
+        <td th:text="${negocio.produto.nome}">Produto A</td>
+        <td th:text="${negocio.quantidade}">1</td>
+
+        <!-- Preço Unitário (dinâmico com base no tipo) -->
+        <td th:text="${#numbers.formatDecimal(negocio.produto.precoVenda, 1, 'POINT', 2, 'COMMA')}">10,00</td>
+
+        <!-- Subtotal (preço * quantidade, baseado no tipo) -->
+        <td th:text="${#numbers.formatDecimal((servico.tipoServico.name() == 'COMPRA' ? negocio.produto.precoCusto : negocio.produto.precoVenda) * negocio.quantidade, 1, 'POINT', 2, 'COMMA')}">10,00</td>
+    </tr>
+
+    </tbody>
+</table>
+
+<br/>
+<a href="/servicos">Voltar para Lista de Serviços</a>
+</body>
+</html>

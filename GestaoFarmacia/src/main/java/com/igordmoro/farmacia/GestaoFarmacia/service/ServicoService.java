@@ -1,31 +1,30 @@
 package com.igordmoro.farmacia.GestaoFarmacia.service;
 
-import com.igordmoro.farmacia.GestaoFarmacia.entity.Servico;
-import com.igordmoro.farmacia.GestaoFarmacia.entity.Status;
-import com.igordmoro.farmacia.GestaoFarmacia.entity.TipoServico; // Importe TipoServico
+import com.igordmoro.farmacia.GestaoFarmacia.entity.*;
+import com.igordmoro.farmacia.GestaoFarmacia.repository.ProdutoRepository;
 import com.igordmoro.farmacia.GestaoFarmacia.repository.ServicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate; // Importe LocalDate
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors; // Importe Collectors (se usado)
 
 @Service
 public class ServicoService {
 
     private final ServicoRepository servicoRepository;
+    private final ProdutoRepository produtoRepository;
 
     @Autowired
-    public ServicoService(ServicoRepository servicoRepository) {
+    public ServicoService(ServicoRepository servicoRepository, ProdutoRepository produtoRepository) {
         this.servicoRepository = servicoRepository;
+        this.produtoRepository = produtoRepository;
     }
 
     @Transactional
     public Servico salvarServico(Servico servico) {
-        // Validações de negócio para Servico
+        // ✅ Validações de dados obrigatórios
         if (servico.getFuncionario() == null || servico.getFuncionario().getIdFuncionario() == null) {
             throw new IllegalArgumentException("Serviço deve ter um funcionário associado com um ID válido.");
         }
@@ -39,20 +38,32 @@ public class ServicoService {
             throw new IllegalArgumentException("O tipo de serviço (COMPRA/VENDA) não pode ser nulo.");
         }
         if (servico.getStatus() == null) {
-            // Define um status padrão se não for fornecido na criação
-            servico.setStatus(Status.ABERTO);
+            servico.setStatus(Status.ABERTO); // default
         }
 
-        // Calcula o valor total do serviço baseado nos negócios associados (se houver)
-        // O valor total deve ser calculado aqui, não na entidade se o campo for @Transient
-        servico.setValor(calcularValorTotalServico(servico));
+        // ✅ Processar Negócios (produtos) e calcular valor total
+        double valorTotal = 0.0;
+        for (Negocio negocio : servico.getNegocios()) {
+            Produto produto = produtoRepository.findById(negocio.getProduto().getIdProduto())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado com ID: " + negocio.getProduto().getIdProduto()));
+
+            negocio.setProduto(produto);
+            negocio.setServico(servico); // ESSENCIAL para o relacionamento
+
+            double subtotal = servico.getTipoServico() == TipoServico.VENDA
+                    ? produto.getPrecoVenda() * negocio.getQuantidade()
+                    : produto.getPrecoCusto() * negocio.getQuantidade();
+
+            valorTotal += subtotal;
+        }
+
+        servico.setValor(valorTotal);
 
         return servicoRepository.save(servico);
     }
 
     @Transactional
     public List<Servico> listarTodosServicos() {
-        // Para garantir que o valor total seja calculado ao listar
         List<Servico> servicos = servicoRepository.findAll();
         servicos.forEach(s -> s.setValor(calcularValorTotalServico(s)));
         return servicos;
@@ -61,11 +72,10 @@ public class ServicoService {
     @Transactional
     public Optional<Servico> buscarServicoPorId(Long id) {
         Optional<Servico> servico = servicoRepository.findById(id);
-        servico.ifPresent(s -> s.setValor(calcularValorTotalServico(s))); // Calcula o valor se o serviço for encontrado
+        servico.ifPresent(s -> s.setValor(calcularValorTotalServico(s)));
         return servico;
     }
 
-    // --- NOVO MÉTODO: DELETAR SERVIÇO ---
     @Transactional
     public void deletarServico(Long id) {
         if (!servicoRepository.existsById(id)) {
@@ -82,6 +92,7 @@ public class ServicoService {
         if (servico.getStatus() == Status.CONCLUÍDO) {
             throw new IllegalStateException("Não é possível cancelar um serviço já concluído.");
         }
+
         servico.setStatus(Status.CANCELADO);
         servicoRepository.save(servico);
     }
@@ -94,6 +105,7 @@ public class ServicoService {
         if (servico.getStatus() == Status.CANCELADO) {
             throw new IllegalStateException("Não é possível concluir um serviço cancelado.");
         }
+
         servico.setStatus(Status.CONCLUÍDO);
         servicoRepository.save(servico);
     }
@@ -105,26 +117,21 @@ public class ServicoService {
         return servicos;
     }
 
-    // Método auxiliar para calcular o valor total de um serviço
-    // Colocado aqui, pois é lógica de negócio que pode ser usada por múltiplos métodos
+    // Método auxiliar interno para recalcular o valor do serviço
     private double calcularValorTotalServico(Servico servico) {
         double total = 0;
         if (servico.getNegocios() != null) {
-            for (var negocio : servico.getNegocios()) {
-                if (negocio.getProduto() != null) {
+            for (Negocio negocio : servico.getNegocios()) {
+                Produto produto = negocio.getProduto();
+                if (produto != null) {
                     if (servico.getTipoServico() == TipoServico.VENDA) {
-                        total += negocio.getProduto().getPrecoVenda() * negocio.getQuantidade();
+                        total += produto.getPrecoVenda() * negocio.getQuantidade();
                     } else if (servico.getTipoServico() == TipoServico.COMPRA) {
-                        total += negocio.getProduto().getPrecoCusto() * negocio.getQuantidade();
+                        total += produto.getPrecoCusto() * negocio.getQuantidade();
                     }
                 }
             }
         }
         return total;
     }
-
-    // Métodos para cálculos financeiros (que antes estavam em Empresa.java)
-    // Devem ir para RelatorioFinanceiroService ou um novo Servico Financeiro,
-    // mas podem estar aqui temporariamente para testes.
-    // ...
 }
