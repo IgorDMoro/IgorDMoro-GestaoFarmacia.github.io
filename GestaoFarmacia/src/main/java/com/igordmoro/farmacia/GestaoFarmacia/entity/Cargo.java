@@ -116,4 +116,15 @@ public class Cargo implements Serializable {
 		}
 		this.planoOdonto = planoOdonto;
 	}
+
+	public String getNome() {
+		if (this.setor != null) {
+			// Retorna o nome da constante do enum (ex: "GERENCIA", "VENDAS").
+			// Se você tiver um método getDisplayName() no seu enum Setor
+			// para nomes mais amigáveis (ex: "Gerência"), use-o aqui:
+			// return this.setor.getDisplayName();
+			return this.setor.name();
+		}
+		return "N/A"; // Caso o setor seja nulo
+	}
 }

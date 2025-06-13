@@ -22,7 +22,7 @@
         <th>Idade</th>
         <th>Gênero</th>
         <th>Imposto</th>
-        <th>Cargo (ID)</th>
+        <th>Cargo</th>
     </tr>
     </thead>
     <tbody>
@@ -34,7 +34,9 @@
         <td th:text="${funcionario.idade}">30</td>
         <td th:text="${funcionario.genero}">M</td>
         <td th:text="${funcionario.imposto}">500.00</td>
-        <td th:text="${funcionario.cargo != null ? funcionario.cargo.id : 'N/A'}">1</td> </tr>
+        <td th:text="${funcionario.cargo != null ? funcionario.cargo.nome : 'N/A'}">Nome do Cargo</td>
+
+    </tr>
     </tbody>
 </table>
 
