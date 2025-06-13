@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios Financeiros</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .card h3 {
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .card p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .value {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .positive {
+            color: #28a745; /* Green */
+        }
+        .negative {
+            color: #dc3545; /* Red */
+        }
+        .form-inline .form-group {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center mb-4">Relatórios Financeiros</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Lucro Total (Concluído)</h3>
+                <p>Valor: <span class="value" th:classappend="${lucroTotal >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(lucroTotal)}">R$ 0,00</span></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Estimativa de Lucro Total (Não Cancelado)</h3>
+                <p>Valor: <span class="value" th:classappend="${estimativaLucroTotal >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(estimativaLucroTotal)}">R$ 0,00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Relatórios Mensais</h2>
+    <div class="form-inline mb-4">
+        <div class="form-group">
+            <label for="mesSelect" class="mr-2">Mês:</label>
+            <select id="mesSelect" class="form-control">
+                <option th:each="monthName, iterStat : ${monthNames}"
+                        th:value="${iterStat.index + 1}"
+                        th:text="${monthName}"
+                        th:selected="${iterStat.index + 1 == currentMonth}">
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="anoSelect" class="mr-2">Ano:</label>
+            <input type="number" id="anoSelect" class="form-control" th:value="${currentYear}" min="1900" max="2100">
+        </div>
+        <button id="consultarMensal" class="btn btn-primary">Consultar</button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Lucro Mensal (Real)</h3>
+                <p>Valor: <span class="value" id="lucroMensalValue" th:classappend="${lucroMensalAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(lucroMensalAtual)}">R$ 0,00</span></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Estimativa de Lucro Mensal</h3>
+                <p>Valor: <span class="value" id="estimativaLucroMensalValue" th:classappend="${estimativaLucroMensalAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(estimativaLucroMensalAtual)}">R$ 0,00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Relatórios Anuais</h2>
+    <div class="form-inline mb-4">
+        <div class="form-group">
+            <label for="anoAnualSelect" class="mr-2">Ano:</label>
+            <input type="number" id="anoAnualSelect" class="form-control" th:value="${currentYear}" min="1900" max="2100">
+        </div>
+        <button id="consultarAnual" class="btn btn-primary">Consultar</button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Lucro Anual (Real)</h3>
+                <p>Valor: <span class="value" id="lucroAnualValue" th:classappend="${lucroAnualAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(lucroAnualAtual)}">R$ 0,00</span></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <h3>Estimativa de Lucro Anual</h3>
+                <p>Valor: <span class="value" id="estimativaLucroAnualValue" th:classappend="${estimativaLucroAnualAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(estimativaLucroAnualAtual)}">R$ 0,00</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Função para formatar números como moeda brasileira
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+
+    // Função para aplicar a cor com base no valor (positivo/negativo)
+    function applyValueColor(elementId, value) {
+        const element = document.getElementById(elementId);
+        element.classList.remove('positive', 'negative');
+        if (value >= 0) {
+            element.classList.add('positive');
+        } else {
+            element.classList.add('negative');
+        }
+    }
+
+    // Lógica para consulta de relatórios mensais
+    $('#consultarMensal').on('click', function() {
+        var mes = $('#mesSelect').val();
+        var ano = $('#anoSelect').val();
+
+        // Buscar Lucro Mensal (Real)
+        $.get('/relatorios/api/lucroMensal', { mes: mes, ano: ano })
+            .done(function(data) {
+                $('#lucroMensalValue').text(formatCurrency(data));
+                applyValueColor('lucroMensalValue', data);
+            })
+            .fail(function(jqXHR) {
+                $('#lucroMensalValue').text('Erro: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : jqXHR.responseText));
+                $('#lucroMensalValue').removeClass('positive').addClass('negative');
+            });
+
+        // Buscar Estimativa de Lucro Mensal
+        $.get('/relatorios/api/estimativaLucroMensal', { mes: mes, ano: ano })
+            .done(function(data) {
+                $('#estimativaLucroMensalValue').text(formatCurrency(data));
+                applyValueColor('estimativaLucroMensalValue', data);
+            })
+            .fail(function(jqXHR) {
+                $('#estimativaLucroMensalValue').text('Erro: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : jqXHR.responseText));
+                $('#estimativaLucroMensalValue').removeClass('positive').addClass('negative');
+            });
+    });
+
+    // Lógica para consulta de relatórios anuais
+    $('#consultarAnual').on('click', function() {
+        var ano = $('#anoAnualSelect').val();
+
+        // Buscar Lucro Anual (Real)
+        $.get('/relatorios/api/lucroAnual', { ano: ano })
+            .done(function(data) {
+                $('#lucroAnualValue').text(formatCurrency(data));
+                applyValueColor('lucroAnualValue', data);
+            })
+            .fail(function(jqXHR) {
+                $('#lucroAnualValue').text('Erro: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : jqXHR.responseText));
+                $('#lucroAnualValue').removeClass('positive').addClass('negative');
+            });
+
+        // Buscar Estimativa de Lucro Anual
+        $.get('/relatorios/api/estimativaLucroAnual', { ano: ano })
+            .done(function(data) {
+                $('#estimativaLucroAnualValue').text(formatCurrency(data));
+                applyValueColor('estimativaLucroAnualValue', data);
+            })
+            .fail(function(jqXHR) {
+                $('#estimativaLucroAnualValue').text('Erro: ' + (jqXHR.responseJSON ? jqXHR.responseJSON.message : jqXHR.responseText));
+                $('#estimativaLucroAnualValue').removeClass('positive').addClass('negative');
+            });
+    });
+</script>
+</body>
+</html>

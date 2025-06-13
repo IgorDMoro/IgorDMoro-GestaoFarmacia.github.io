@@ -1,14 +1,16 @@
 package com.igordmoro.farmacia.GestaoFarmacia.service;
 
 import com.igordmoro.farmacia.GestaoFarmacia.entity.Servico;
+import com.igordmoro.farmacia.GestaoFarmacia.entity.Negocio;
 import com.igordmoro.farmacia.GestaoFarmacia.entity.Status;
 import com.igordmoro.farmacia.GestaoFarmacia.entity.TipoServico;
 import com.igordmoro.farmacia.GestaoFarmacia.repository.ServicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,7 +23,6 @@ public class RelatorioFinanceiroService {
         this.servicoRepository = servicoRepository;
     }
 
-    // Método para calcular o valor total de um serviço (se não for feito na entidade)
     public double calcularValorServico(Servico servico) {
         double valor = 0;
         if (servico.getNegocios() != null) {
@@ -30,7 +31,7 @@ public class RelatorioFinanceiroService {
                     if (servico.getTipoServico() == TipoServico.VENDA) {
                         valor += negocio.getProduto().getPrecoVenda() * negocio.getQuantidade();
                     } else if (servico.getTipoServico() == TipoServico.COMPRA) {
-                        valor += negocio.getProduto().getPrecoCusto() * negocio.getQuantidade();
+                        valor -= negocio.getProduto().getPrecoCusto() * negocio.getQuantidade();
                     }
                 }
             }
@@ -38,109 +39,85 @@ public class RelatorioFinanceiroService {
         return valor;
     }
 
+    @Transactional(readOnly = true)
     public double calcularLucroTotal() {
-        List<Servico> servicosConcluidos = servicoRepository.findByStatus(Status.CONCLUÍDO);
-        double somaVendas = 0;
-        double somaCompras = 0;
-
-        for (Servico s : servicosConcluidos) {
-            double valorServico = calcularValorServico(s); // Calcula o valor dinamicamente
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
-            }
-        }
-        return somaVendas - somaCompras;
+        return servicoRepository.findAll().stream()
+                .filter(s -> Objects.equals(s.getStatus(), Status.CONCLUÍDO))
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
     }
 
+    @Transactional(readOnly = true)
     public double calcularEstimativaLucroTotal() {
-        List<Servico> servicosNaoCancelados = servicoRepository.findAll().stream()
+        return servicoRepository.findAll().stream()
                 .filter(s -> s.getStatus() != Status.CANCELADO)
-                .collect(Collectors.toList());
-        double somaVendas = 0;
-        double somaCompras = 0;
-
-        for (Servico s : servicosNaoCancelados) {
-            double valorServico = calcularValorServico(s);
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
-            }
-        }
-        return somaVendas - somaCompras;
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
     }
 
-    public double calculaLucroMensal(int mes, int ano) {
-        List<Servico> servicosDoMes = servicoRepository.findAll().stream()
-                .filter(s -> s.getData().getMonthValue() == mes && s.getData().getYear() == ano && s.getStatus() == Status.CONCLUÍDO)
-                .collect(Collectors.toList());
-        double somaVendas = 0;
-        double somaCompras = 0;
-
-        for (Servico s : servicosDoMes) {
-            double valorServico = calcularValorServico(s);
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
-            }
-        }
-        return somaVendas - somaCompras;
+    @Transactional(readOnly = true)
+    public double calcularLucroMensal(int mes, int ano) {
+        validarPeriodo(mes, ano);
+        return servicoRepository.findAll().stream()
+                .filter(s -> s.getData() != null && s.getData().getMonthValue() == mes && s.getData().getYear() == ano)
+                .filter(s -> Objects.equals(s.getStatus(), Status.CONCLUÍDO))
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
     }
 
-    public double calculaEstimativaLucroMensal(int mes, int ano) {
-        List<Servico> servicosDoMes = servicoRepository.findAll().stream()
-                .filter(s -> s.getData().getMonthValue() == mes && s.getData().getYear() == ano && s.getStatus() != Status.CANCELADO)
-                .collect(Collectors.toList());
-        double somaVendas = 0;
-        double somaCompras = 0;
-
-        for (Servico s : servicosDoMes) {
-            double valorServico = calcularValorServico(s);
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
-            }
-        }
-        return somaVendas - somaCompras;
+    @Transactional(readOnly = true)
+    public double calcularEstimativaLucroMensal(int mes, int ano) {
+        validarPeriodo(mes, ano);
+        return servicoRepository.findAll().stream()
+                .filter(s -> s.getData() != null && s.getData().getMonthValue() == mes && s.getData().getYear() == ano)
+                .filter(s -> s.getStatus() != Status.CANCELADO)
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
     }
 
-    public double calculaLucroAnual(int ano) {
-        List<Servico> servicosDoAno = servicoRepository.findAll().stream()
-                .filter(s -> s.getData().getYear() == ano && s.getStatus() == Status.CONCLUÍDO)
-                .collect(Collectors.toList());
-        double somaVendas = 0;
-        double somaCompras = 0;
-
-        for (Servico s : servicosDoAno) {
-            double valorServico = calcularValorServico(s);
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
-            }
-        }
-        return somaVendas - somaCompras;
+    @Transactional(readOnly = true)
+    public double calcularLucroAnual(int ano) {
+        validarPeriodo(null, ano);
+        return servicoRepository.findAll().stream()
+                .filter(s -> s.getData() != null && s.getData().getYear() == ano)
+                .filter(s -> Objects.equals(s.getStatus(), Status.CONCLUÍDO))
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
     }
 
-    public double calculaEstimativaLucroAnual(int ano) {
-        List<Servico> servicosDoAno = servicoRepository.findAll().stream()
-                .filter(s -> s.getData().getYear() == ano && s.getStatus() != Status.CANCELADO)
-                .collect(Collectors.toList());
-        double somaVendas = 0;
-        double somaCompras = 0;
+    @Transactional(readOnly = true)
+    public double calcularEstimativaLucroAnual(int ano) {
+        validarPeriodo(null, ano);
+        return servicoRepository.findAll().stream()
+                .filter(s -> s.getData() != null && s.getData().getYear() == ano)
+                .filter(s -> s.getStatus() != Status.CANCELADO)
+                .mapToDouble(this::calcularLucroDoServicoDetalhado)
+                .sum();
+    }
 
-        for (Servico s : servicosDoAno) {
-            double valorServico = calcularValorServico(s);
-            if (s.getTipoServico() == TipoServico.VENDA) {
-                somaVendas += valorServico;
-            } else if (s.getTipoServico() == TipoServico.COMPRA) {
-                somaCompras += valorServico;
+    private void validarPeriodo(Integer mes, int ano) {
+        if (mes != null && (mes < 1 || mes > 12)) {
+            throw new IllegalArgumentException("Mês inválido. Deve ser entre 1 e 12.");
+        }
+        if (ano < 1900 || ano > 2100) {
+            throw new IllegalArgumentException("Ano inválido. Deve ser entre 1900 e 2100.");
+        }
+    }
+
+    private double calcularLucroDoServicoDetalhado(Servico servico) {
+        double totalParaServico = 0;
+
+        if (servico.getNegocios() != null) {
+            for (Negocio negocio : servico.getNegocios()) {
+                if (negocio != null && negocio.getProduto() != null) {
+                    if (servico.getTipoServico() == TipoServico.VENDA) {
+                        totalParaServico += (negocio.getProduto().getPrecoVenda() - negocio.getProduto().getPrecoCusto()) * negocio.getQuantidade();
+                    } else if (servico.getTipoServico() == TipoServico.COMPRA) {
+                        totalParaServico -= negocio.getProduto().getPrecoCusto() * negocio.getQuantidade();
+                    }
+                }
             }
         }
-        return somaVendas - somaCompras;
+        return totalParaServico;
     }
 }
