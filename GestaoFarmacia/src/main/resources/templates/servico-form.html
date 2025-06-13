@@ -29,16 +29,16 @@
     </select><br/><br/>
 
     <label for="funcionario">Funcionário:</label>
-    <select id="funcionario" th:field="*{funcionario.idFuncionario}" required>
+    <select id="funcionario" th:field="*{funcionario}" required>
         <option value="">Selecione um Funcionário</option>
-        <option th:each="funcionario : ${funcionarios}" th:value="${f.idFuncionario}" th:text="${funcionario.nome}">Funcionário</option>
+        <option th:each="funcionario : ${funcionarios}" th:value="${funcionario.idFuncionario}" th:text="${funcionario.nome}">Funcionário</option>
     </select><br/><br/>
 
-    <label for="transportadora">Transportadora:</label>
-    <select id="transportadora" th:field="*{transportadora.id}" required>
-        <option value="">Selecione uma Transportadora</option>
-        <option th:each="transportadora : ${transportadoras}" th:value="${transportadora.id}" th:text="${transportadora.nome}">Transportadora</option>
-    </select><br/><br/>
+    <label for="transportadora">Transportadora:</label>-->
+   <select id="transportadora" th:field="*{transportadora}" required>-->
+      <option value="">Selecione uma Transportadora</option>-->
+     <option th:each="transportadora : ${transportadoras}" th:value="${transportadora.id}" th:text="${transportadora.nome}">Transportadora</option>
+   </select><br/><br/>
 
     <button type="submit">Salvar Serviço</button>
 </form>

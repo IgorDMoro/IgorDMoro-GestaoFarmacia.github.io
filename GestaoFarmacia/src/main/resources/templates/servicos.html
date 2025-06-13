@@ -29,7 +29,7 @@
         <td th:text="${servico.idServico}">1</td> <td th:text="${#temporals.format(servico.data, 'dd/MM/yyyy')}">12/06/2025</td>
         <td th:text="${servico.status}">ABERTO</td>
         <td th:text="${servico.tipoServico}">VENDA</td>
-        <td th:text="${servico.funcionario != null ? servico.funcionario.id : 'N/A'}">1</td>
+        <td th:text="${servico.funcionario != null ? servico.funcionario.idFuncionario : 'N/A'}">1</td>
         <td th:text="${servico.transportadora != null ? servico.transportadora.id : 'N/A'}">1</td>
         <td th:text="${servico.valor}">150.00</td>
     </tr>

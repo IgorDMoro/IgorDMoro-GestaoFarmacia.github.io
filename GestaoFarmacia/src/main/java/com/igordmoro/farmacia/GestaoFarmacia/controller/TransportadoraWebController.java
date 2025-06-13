@@ -1,11 +1,14 @@
 package com.igordmoro.farmacia.GestaoFarmacia.controller; // Ou .controller.web se você criar um subpacote
 
+import com.igordmoro.farmacia.GestaoFarmacia.entity.Produto;
 import com.igordmoro.farmacia.GestaoFarmacia.entity.Transportadora;
 import com.igordmoro.farmacia.GestaoFarmacia.repository.TransportadoraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller; // Use @Controller para views
 import org.springframework.ui.Model; // Importe Model para passar dados para a view
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
@@ -32,5 +35,13 @@ public class TransportadoraWebController {
     }
 
     // Um método para salvar (POST) do formulário viria aqui, usando @PostMapping
+
+    @PostMapping // Mapeia requisições POST para /produtos
+    public String salvarTransportadora(@ModelAttribute Transportadora transportadora) {
+        // Aqui você pode adicionar lógica de validação ou cálculo antes de salvar
+        transportadoraRepository.save(transportadora); // Salva o produto no banco de dados
+        return "redirect:/transportadoras"; // Redireciona para a lista de produtos após salvar
+    }
+
     // e possivelmente redirecionando de volta para a lista.
 }
