@@ -26,11 +26,11 @@ public class ProdutoWebController {
     public String listarProdutos(Model model) {
         List<Produto> produtos = produtoRepository.findAll(); // Busca todos os produtos do banco
         model.addAttribute("produtos", produtos); // Adiciona a lista de produtos ao modelo
-        return "produtos-lista"; // Retorna o nome da view (thymeleaf)
+        return "produtos"; // Retorna o nome da view (thymeleaf)
     }
 
     // Método para exibir o formulário de adição/edição de produto
-    @GetMapping("/novo") // Mapeia requisições GET para /produtos/novo
+    @GetMapping("/form") // Mapeia requisições GET para /produtos/form
     public String exibirFormularioAdicao(Model model) {
         model.addAttribute("produto", new Produto()); // Cria um novo objeto Produto para o formulário
         return "produto-form"; // Retorna o nome da view do formulário

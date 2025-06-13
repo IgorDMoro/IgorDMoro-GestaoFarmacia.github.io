@@ -4,35 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Produtos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-<h1>Produtos Cadastrados</h1>
+<h1>Lista de Produtos</h1>
 
-<div th:if="${produtos.isEmpty()}">
-    <p>Nenhum produto cadastrado ainda.</p>
-</div>
+<a href="/produtos/form">Adicionar Novo Produto</a>
+<br/><br/>
 
-<table border="1" th:unless="${produtos.isEmpty()}">
+<table border="1">
     <thead>
     <tr>
         <th>ID</th>
         <th>Nome</th>
-        <th>Preço Custo</th>
-        <th>Preço Venda</th>
+        <th>Preço de Custo</th>
+        <th>Preço de Venda</th>
         <th>Quantidade em Estoque</th>
+        <th>Ações</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="produto : ${produtos}">
-        <td th:text="${produto.idProduto}">1</td> <td th:text="${produto.nome}">Dipirona</td>
-        <td th:text="${produto.precoCusto}">5.50</td>
-        <td th:text="${produto.precoVenda}">10.99</td>
-        <td th:text="${produto.quantidadeEstoque}">100</td>
+        <td th:text="${produto.idProduto}"></td>
+        <td th:text="${produto.nome}"></td>
+        <td th:text="${#numbers.formatCurrency(produto.precoCusto)}"></td>
+        <td th:text="${#numbers.formatCurrency(produto.precoVenda)}"></td>
+        <td th:text="${produto.quantidadeEstoque}"></td>
+        <td>
+            <a th:href="@{/produtos/editar/{id}(id=${produto.idProduto})}">Editar</a>
+            &nbsp;&nbsp;&nbsp;
+            <a th:href="@{/produtos/excluir/{id}(id=${produto.idProduto})}"
+               onclick="return confirm('Tem certeza que deseja excluir este produto?');">Excluir</a>
+        </td>
     </tr>
     </tbody>
 </table>
 
 <br/>
-<a href="/produtos/form">Adicionar Novo Produto</a>
+<a href="/">Voltar para o Início</a>
 </body>
 </html>
