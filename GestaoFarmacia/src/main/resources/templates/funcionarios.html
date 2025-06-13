@@ -29,12 +29,13 @@
     <tr th:each="funcionario : ${funcionarios}">
         <td th:text="${funcionario.idFuncionario}">1</td>
         <td th:text="${funcionario.nome}">João Silva</td>
-        <td th:text="${funcionario.salarioBruto}">3000.00</td>
-        <td th:text="${funcionario.salarioLiquido}">2500.00</td>
+        <td th:text="${#numbers.formatDecimal(funcionario.salarioBruto, 0, 'COMMA', 2, 'POINT')}">3000.00</td>
+        <td th:text="${#numbers.formatDecimal(funcionario.salarioLiquido, 0, 'COMMA', 2, 'POINT')}">2500.00</td>
         <td th:text="${funcionario.idade}">30</td>
         <td th:text="${funcionario.genero}">M</td>
-        <td th:text="${funcionario.imposto}">500.00</td>
-        <td th:text="${funcionario.cargo != null ? funcionario.cargo.id : 'N/A'}">1</td> </tr>
+        <td th:text="${#numbers.formatDecimal(funcionario.imposto, 0, 'COMMA', 2, 'POINT')}">500.00</td>
+        <td th:text="${funcionario.cargo != null ? funcionario.cargo.id : 'N/A'}">1</td>
+    </tr>
     </tbody>
 </table>
 
