@@ -1,21 +1,23 @@
-    <!DOCTYPE html>
-    <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Lista de Cargos - Gestão de Farmácia</title>
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lista de Cargos - Gestão de Farmácia</title>
 
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-        <style>
-            body {
-                font-family: 'Inter', sans-serif;
-                background: linear-gradient(to right bottom, #E3E6E3, #D9DCD9);
-                min-height: 100vh;
-                margin: 0;
-            }
-            /* Menu lateral fixo */
-            nav.sidebar {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #E3E6E3, #D9DCD9);
+            min-height: 100vh;
+            margin: 0;
+            display: flex; /* Adicionado ou verificado: essencial para layout com sidebar fixa */
+            background-attachment: fixed; /* Opcional: para fundo fixo */
+        }
+        /* Menu lateral fixo */
+        nav.sidebar {
             background-color: white;
             width: 260px; /* largura maior */
             height: 100vh;
@@ -30,170 +32,298 @@
             z-index: 50;
         }
         nav.sidebar a {
-            padding: 1rem 1.75rem; /* padding interno maior */
+            padding: 1rem 1.75rem;
             font-weight: 600;
             color: #006C6A;
             border-radius: 0.75rem;
             transition: all 0.3s ease;
             background-image: linear-gradient(to right, #BFCFCB, #A9B0AE);
             text-align: center;
-            min-height: 48px; /* altura mínima para facilitar clique */
+            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.1rem;
             box-shadow: inset 0 0 0 0 transparent;
+            text-decoration: none; /* Remover sublinhado padrão */
         }
-        nav.sidebar a:hover, nav.sidebar a.active {
+        nav.sidebar a:hover,
+        nav.sidebar a.active {
             background-image: linear-gradient(to right, #007F7D, #006C6A);
             color: white;
-            box-shadow: 0 6px 12px rgba(0,127,125,0.5);
-            transform: translateX(6px);
+            box-shadow: 0 6px 12px rgba(0, 127, 125, 0.5);
+            transform: translateX(6px); /* Efeito de deslize */
         }
-            /* Conteúdo principal deslocado pela sidebar */
-            main.content {
-                margin-left: 240px;
-                padding: 2rem;
-                max-width: 960px;
+
+        /* Conteúdo principal */
+        main.content {
+            margin-left: 300px; /* CORRIGIDO: Ajuste para compensar a largura da sidebar (260px + 40px de espaçamento) */
+            padding: 2rem 3rem;
+            max-width: 1200px; /* Largura máxima para o conteúdo */
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            animation: fadeIn 0.8s ease-out forwards;
+            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura */
+            margin-top: 50px; /* Espaço do topo */
+            max-height: fit-content;
+            flex-grow: 1; /* Adicionado: permite que o conteúdo ocupe o espaço restante */
+            margin-right: 50px; /* Adicionado: um pouco de margem à direita para não colar na borda da tela */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            /* Título com gradiente */
-            h1.text-gradient-logo {
-                background-clip: text;
-                -webkit-background-clip: text;
-                color: transparent;
-                background-image: linear-gradient(to right, #007F7D, #006C6A);
-                font-weight: 800;
-                font-size: 2.5rem;
-                margin-bottom: 1.5rem;
-                border-bottom: 4px solid #D1D5DB; /* cinza claro */
-                padding-bottom: 0.5rem;
-                max-width: fit-content;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-            /* Tabela estilizada */
-            table {
+        }
+
+        h1 {
+            font-weight: 800;
+            color: #007F7D;
+            margin-bottom: 1.5rem;
+            border-bottom: 4px solid #D1D5DB;
+            padding-bottom: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-buttons a {
+            background-color: #007F7D;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 127, 125, 0.3);
+        }
+
+        .action-buttons a:hover {
+            background-color: #006C6A;
+            transform: translateY(-2px);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #6B7280;
+            font-style: italic;
+            margin-top: 3rem;
+            font-size: 1.1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.8rem; /* Espaçamento vertical entre as linhas */
+            margin-top: 2rem;
+            background: #F9FAF9;
+            border-radius: 0.75rem;
+            overflow: hidden; /* Para garantir que o border-radius funcione */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+        }
+
+        th {
+            background-color: #E3E6E3;
+            color: #004D4B;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            background-color: white;
+            border-bottom: 1px solid #E5E7EB;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        /* Arredondar cantos da primeira e última célula da thead */
+        th:first-child { border-top-left-radius: 0.75rem; }
+        th:last-child { border-top-right-radius: 0.75rem; }
+
+        /* Arredondar cantos da primeira e última célula da última tr do tbody */
+        tbody tr:last-child td:first-child { border-bottom-left-radius: 0.75rem; }
+        tbody tr:last-child td:last-child { border-bottom-right-radius: 0.75rem; }
+
+        tr {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Mensagens de feedback */
+        .message {
+            background-color: #d1fae5; /* green-100 */
+            color: #065f46; /* green-900 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .error {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-900 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            nav.sidebar {
+                position: relative;
                 width: 100%;
-                border-collapse: separate;
-                border-spacing: 0 0.5rem;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                background-color: white;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 1rem 0;
+                box-shadow: none;
+            }
+
+            nav.sidebar a {
+                font-size: 1rem;
+                padding: 0.75rem 1rem;
+                min-height: auto;
+                transform: none !important; /* Desabilita a animação de hover em telas pequenas */
+            }
+
+            main.content {
+                margin-left: 0; /* Reseta a margem esquerda para telas pequenas */
+                margin-right: 0; /* Reseta a margem direita */
+                border-radius: 0;
+                box-shadow: none;
+                padding: 1.5rem 1rem;
+                min-height: auto;
+                max-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons a {
+                width: 100%;
+                text-align: center;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #E5E7EB;
+                margin-bottom: 1rem;
                 border-radius: 0.75rem;
                 overflow: hidden;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
-            thead tr {
-                background: linear-gradient(to right, #007F7D, #006C6A);
-                color: white;
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 45%;
+                padding-left: 1rem;
+                white-space: nowrap;
                 text-align: left;
                 font-weight: 600;
+                color: #004D4B;
             }
-            thead th {
-                padding: 0.75rem 1rem;
-            }
-            tbody tr {
-                background-color: #f9fafb;
-                transition: background-color 0.3s ease;
-            }
-            tbody tr:hover {
-                background-color: #e6f3f2;
-            }
-            tbody td {
-                padding: 0.75rem 1rem;
-                color: #374151; /* cinza escuro */
-                border-bottom: 1px solid #e5e7eb;
-            }
-            /* Botão/link adicionar */
-            a.add-button {
-                display: inline-block;
-                margin-top: 1.5rem;
-                padding: 0.75rem 1.5rem;
-                font-weight: 700;
-                color: white;
-                border-radius: 0.5rem;
-                background-image: linear-gradient(to right, #00ACAA, #009693);
-                box-shadow: 0 4px 8px rgba(0,172,170,0.4);
-                transition: all 0.3s ease;
-                text-decoration: none;
-            }
-            a.add-button:hover {
-                background-image: linear-gradient(to right, #007F7D, #006C6A);
-                box-shadow: 0 6px 12px rgba(0,127,125,0.6);
-                transform: translateY(-2px) scale(1.02);
-            }
-            /* Mensagem "Nenhum cargo" */
-            .empty-message {
-                background-color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 0.75rem;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-                color: #4B5563;
-                font-weight: 600;
-                max-width: fit-content;
-            }
-            /* Responsividade básica */
-            @media (max-width: 768px) {
-                nav.sidebar {
-                    position: relative;
-                    width: 100%;
-                    height: auto;
-                    flex-direction: row;
-                    justify-content: center;
-                    padding: 1rem 0;
-                    box-shadow: none;
-                }
-                nav.sidebar a {
-                    font-size: 0.85rem;
-                    padding: 0.5rem 1rem;
-                }
-                main.content {
-                    margin-left: 0;
-                    padding: 1rem;
-                }
-                table {
-                    font-size: 0.9rem;
-                }
-            }
-        </style>
-    </head>
-    <body>
-    <nav class="sidebar" aria-label="Menu lateral principal">
-        <a th:href="@{/funcionarios}" class="">Gestão de Funcionários</a>
-        <a th:href="@{/produtos}" class="">Estoque de Produtos</a>
-        <a th:href="@{/servicos}" class="">Serviços</a>
-        <a th:href="@{/cargos}" class="active">Gestão de Cargos</a>
-        <a th:href="@{/transportadoras}" class="">Gerenciar Transportadoras</a>
-        <a th:href="@{/relatorios}" class="">Relatórios Financeiros</a>
-    </nav>
+        }
+    </style>
+</head>
+<body>
 
-    <main class="content">
-        <h1 class="text-gradient-logo">Cargos Cadastrados</h1>
+<nav class="sidebar" aria-label="Menu lateral principal">
+    <a th:href="@{/funcionarios}">Gestão de Funcionários</a>
+    <a th:href="@{/produtos}">Estoque de Produtos</a>
+    <a th:href="@{/servicos}">Serviços</a>
+    <a th:href="@{/cargos}" class="active">Gestão de Cargos</a>
+    <a th:href="@{/transportadoras}">Gerenciar Transportadoras</a>
+    <a th:href="@{/relatorios}">Relatórios Financeiros</a>
+</nav>
 
-        <div th:if="${cargos.isEmpty()}" class="empty-message">
-            Nenhum cargo cadastrado ainda.
-        </div>
+<main class="content">
+    <h1>Cargos Cadastrados</h1>
 
-        <table border="0" th:unless="${cargos.isEmpty()}">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Setor</th>
-                <th>Vale Alimentação</th>
-                <th>Vale Transporte</th>
-                <th>Plano Saúde</th>
-                <th>Plano Odonto</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="cargo : ${cargos}">
-                <td th:text="${cargo.id}">1</td>
-                <td th:text="${cargo.setor}">ALMOXARIFADO</td>
-                <td th:text="${cargo.valeAlimento}">800.00</td>
-                <td th:text="${cargo.valeTransporte}">500.00</td>
-                <td th:text="${cargo.planoSaude}">5000.00</td>
-                <td th:text="${cargo.planoOdonto}">4000.00</td>
-            </tr>
-            </tbody>
-        </table>
+    <div class="action-buttons">
+        <a th:href="@{/cargos/form}">Cadastrar Novo Cargo</a>
+    </div>
 
-        <a href="/cargos/form" class="add-button">Adicionar Novo Cargo</a>
-    </main>
-    </body>
-    </html>
+    <div th:if="${message}" class="message">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${cargos.isEmpty()}" class="empty-message">
+        Nenhum cargo cadastrado ainda.
+    </div>
+
+    <table border="0" th:unless="${cargos.isEmpty()}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Setor</th>
+            <th>Vale Alimentação</th>
+            <th>Vale Transporte</th>
+            <th>Plano Saúde</th>
+            <th>Plano Odonto</th>
+            <th>Funcionários Atribuídos</th> </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cargo : ${cargos}">
+            <td data-label="ID" th:text="${cargo.id}">1</td>
+            <td data-label="Setor" th:text="${cargo.setor}">ALMOXARIFADO</td>
+            <td data-label="Vale Alimentação" th:text="${#numbers.formatCurrency(cargo.valeAlimento)}">R$ 800.00</td>
+            <td data-label="Vale Transporte" th:text="${#numbers.formatCurrency(cargo.valeTransporte)}">R$ 500.00</td>
+            <td data-label="Plano Saúde" th:text="${#numbers.formatCurrency(cargo.planoSaude)}">R$ 5000.00</td>
+            <td data-label="Plano Odonto" th:text="${#numbers.formatCurrency(cargo.planoOdonto)}">R$ 4000.00</td>
+            <td data-label="Funcionários Atribuídos">
+                <span th:text="${contagemFuncionariosPorCargo.getOrDefault(cargo.id, 0L)}">0</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+
+</body>
+</html>

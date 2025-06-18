@@ -14,6 +14,7 @@ import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional; // Importação adicionada para Optional
 
 @Controller
 @RequestMapping("/relatorios")
@@ -27,40 +28,49 @@ public class RelatorioFinanceiroWebController {
     }
 
     @GetMapping
-    public String showRelatoriosPage(Model model) {
+    public String showRelatoriosPage(
+            @RequestParam(value = "mes", required = false) Integer mes, // Aceita mes como parâmetro opcional
+            @RequestParam(value = "ano", required = false) Integer ano, // Aceita ano como parâmetro opcional
+            Model model) {
+
         int currentYear = LocalDate.now().getYear();
         int currentMonth = LocalDate.now().getMonthValue();
+
+        // Se mes ou ano não forem fornecidos na requisição, usa o mês e ano atuais como padrão.
+        int selectedMonth = Optional.ofNullable(mes).orElse(currentMonth);
+        int selectedYear = Optional.ofNullable(ano).orElse(currentYear);
 
         // Dados do caixa e saldos
         model.addAttribute("caixaInicial", relatorioFinanceiroService.getCaixaInicial());
         model.addAttribute("saldoAtual", relatorioFinanceiroService.calcularSaldoAtual());
         model.addAttribute("estimativaSaldoAtual", relatorioFinanceiroService.calcularEstimativaSaldoAtual());
         model.addAttribute("saldoMensalAtual",
-                relatorioFinanceiroService.calcularSaldoMensal(currentMonth, currentYear));
+                relatorioFinanceiroService.calcularSaldoMensal(selectedMonth, selectedYear));
         model.addAttribute("estimativaSaldoMensalAtual",
-                relatorioFinanceiroService.calcularEstimativaSaldoMensal(currentMonth, currentYear));
+                relatorioFinanceiroService.calcularEstimativaSaldoMensal(selectedMonth, selectedYear));
 
         // Dados de lucros
         model.addAttribute("lucroTotal", relatorioFinanceiroService.calcularLucroTotal());
         model.addAttribute("estimativaLucroTotal", relatorioFinanceiroService.calcularEstimativaLucroTotal());
         model.addAttribute("lucroMensalAtual",
-                relatorioFinanceiroService.calcularLucroMensal(currentMonth, currentYear));
+                relatorioFinanceiroService.calcularLucroMensal(selectedMonth, selectedYear));
         model.addAttribute("estimativaLucroMensalAtual",
-                relatorioFinanceiroService.calcularEstimativaLucroMensal(currentMonth, currentYear));
+                relatorioFinanceiroService.calcularEstimativaLucroMensal(selectedMonth, selectedYear));
         model.addAttribute("lucroAnualAtual",
-                relatorioFinanceiroService.calcularLucroAnual(currentYear));
+                relatorioFinanceiroService.calcularLucroAnual(selectedYear));
         model.addAttribute("estimativaLucroAnualAtual",
-                relatorioFinanceiroService.calcularEstimativaLucroAnual(currentYear));
+                relatorioFinanceiroService.calcularEstimativaLucroAnual(selectedYear));
 
-        // Metadados
-        model.addAttribute("currentMonth", currentMonth);
-        model.addAttribute("currentYear", currentYear);
+        // Metadados para o formulário de seleção
+        model.addAttribute("currentMonth", selectedMonth);
+        model.addAttribute("currentYear", selectedYear);
         model.addAttribute("monthNames", getMonthNames());
+
 
         return "relatorio";
     }
 
-    // Endpoints API
+    // Endpoints API (mantidos como estavam)
     @GetMapping("/api/caixaInicial")
     @ResponseBody
     public double getCaixaInicialApi() {

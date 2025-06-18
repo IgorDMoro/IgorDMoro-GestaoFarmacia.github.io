@@ -67,7 +67,7 @@
             animation: fadeIn 0.8s ease-out forwards;
             box-sizing: border-box;
             margin-top: 50px;
-            min-height: 80vh;
+            max-height: fit-content;
         }
 
         @keyframes fadeIn {
@@ -129,6 +129,79 @@
             margin-bottom: 3rem;
         }
 
+        /* Estilos adicionais para o formulário de seleção de mês/ano */
+        .filter-section {
+            background-color: #E3E6E3; /* Cor de fundo para toda a seção de filtros e resultados mensais */
+            border-left: 6px solid #007F7D;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .filter-section h2 {
+            /* Resetting specific h2 styles if needed, to align with the section title */
+            margin-top: 0;
+            padding-top: 0;
+            border-bottom: none; /* Remove a linha de baixo para o título da seção de filtro */
+        }
+
+        .filter-form {
+            background: #F0F3F0; /* Cor de fundo para o card do formulário */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem; /* Espaço abaixo do formulário antes dos cards de resultado */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-form div {
+            flex-grow: 1; /* Permite que os selects ocupem o espaço disponível */
+            min-width: 150px; /* Garante um tamanho mínimo para os selects */
+        }
+
+        .filter-form label {
+            font-weight: 600;
+            color: #004D4B;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .filter-form select {
+            padding: 0.6rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%; /* Faz o select ocupar 100% do div pai */
+            background-color: white;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%234a4a4a%22%20d%3D%22M192%20256L64%20128v256z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            background-size: 0.8em;
+        }
+
+        .filter-form button {
+            background-color: #007F7D;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 127, 125, 0.3);
+            border: none;
+            align-self: flex-end; /* Alinha o botão com a parte inferior dos selects */
+        }
+
+        .filter-form button:hover {
+            background-color: #006C6A;
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 768px) {
             nav.sidebar {
                 position: relative;
@@ -154,6 +227,20 @@
                 padding: 1.5rem 1rem;
                 min-height: auto;
                 max-width: 100%;
+            }
+
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-form div {
+                width: 100%;
+            }
+
+            .filter-form select,
+            .filter-form button {
+                width: 100%;
             }
         }
     </style>
@@ -191,14 +278,56 @@
     </section>
 
     <section aria-labelledby="lucros-totais" class="mb-10">
+        <h2 id="lucros-totais">Lucros Totais</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card" role="region" aria-label="Lucro Total Concluído">
-                <h3 id="lucros-totais">Lucro Total (Concluído)</h3>
+                <h3>Lucro Total (Concluído)</h3>
                 <p>Valor: <span class="value" th:classappend="${lucroTotal >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(lucroTotal)}">R$ 0,00</span></p>
             </div>
             <div class="card" role="region" aria-label="Estimativa de Lucro Total">
                 <h3>Estimativa de Lucro Total (Não Cancelado)</h3>
                 <p>Valor: <span class="value" th:classappend="${estimativaLucroTotal >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(estimativaLucroTotal)}">R$ 0,00</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="filter-section" aria-labelledby="lucros-mensais">
+        <h2 id="lucros-mensais">Lucros e Estimativas Mensais - <span th:text="${monthNames[currentMonth - 1]}">Mês</span> de <span th:text="${currentYear}">Ano</span></h2>
+
+        <form th:action="@{/relatorios}" method="get" class="filter-form">
+            <div>
+                <label for="mes">Mês:</label>
+                <select id="mes" name="mes">
+                    <option th:each="monthNum : ${#numbers.sequence(1, 12)}"
+                            th:value="${monthNum}"
+                            th:text="${monthNames[monthNum - 1]}"
+                            th:selected="${monthNum == currentMonth}">
+                        Mês
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label for="ano">Ano:</label>
+                <select id="ano" name="ano">
+                    <option th:each="yearNum : ${#numbers.sequence(currentYear - 5, currentYear + 5)}"
+                            th:value="${yearNum}"
+                            th:text="${yearNum}"
+                            th:selected="${yearNum == currentYear}">
+                        Ano
+                    </option>
+                </select>
+            </div>
+            <button type="submit">Gerar Relatório</button>
+        </form>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card" role="region" aria-label="Lucro Mensal Concluído">
+                <h3>Lucro Mensal (Concluído)</h3>
+                <p>Valor: <span class="value" th:classappend="${lucroMensalAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(lucroMensalAtual)}">R$ 0,00</span></p>
+            </div>
+            <div class="card" role="region" aria-label="Estimativa de Lucro Mensal">
+                <h3>Estimativa de Lucro Mensal (Não Cancelado)</h3>
+                <p>Valor: <span class="value" th:classappend="${estimativaLucroMensalAtual >= 0} ? 'positive' : 'negative'" th:text="${#numbers.formatCurrency(estimativaLucroMensalAtual)}">R$ 0,00</span></p>
             </div>
         </div>
     </section>
