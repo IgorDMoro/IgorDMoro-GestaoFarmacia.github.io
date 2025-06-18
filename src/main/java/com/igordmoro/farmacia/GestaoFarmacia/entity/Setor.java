@@ -1,0 +1,11 @@
+package com.igordmoro.farmacia.GestaoFarmacia.entity;
+
+public enum Setor {
+    GERENTE_FILIAL,
+    ATENDIMENTO_CLIENTE,
+    GESTAO_PESSOAS,
+    FINANCEIRO,
+    VENDAS,
+    ALMOXARIFADO,
+    TRANSPORTADORAS
+}
